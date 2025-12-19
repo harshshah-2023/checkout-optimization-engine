@@ -1,0 +1,54 @@
+/**
+ * Payment lifecycle statuses
+ * These are driven strictly by the state machine
+ */
+export const PAYMENT_STATUS = {
+  CREATED: "CREATED",
+  AUTH_IN_PROGRESS: "AUTH_IN_PROGRESS",
+  AUTHORIZED: "AUTHORIZED",
+  CAPTURED: "CAPTURED",
+  SETTLED: "SETTLED",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED"
+};
+
+/**
+ * Supported payment methods
+ */
+export const PAYMENT_METHOD = {
+  CARD: "CARD",
+  UPI: "UPI",
+  NETBANKING: "NETBANKING"
+};
+
+/**
+ * Failure codes used across the system
+ * These directly power failure analytics
+ */
+export const FAILURE_CODE = {
+  ISSUER_TIMEOUT: "ISSUER_TIMEOUT",
+  INSUFFICIENT_FUNDS: "INSUFFICIENT_FUNDS",
+  NETWORK_ERROR: "NETWORK_ERROR",
+  PSP_DOWN: "PSP_DOWN",
+  BANK_DECLINED: "BANK_DECLINED",
+  USER_ABORTED: "USER_ABORTED",
+  INVALID_DETAILS: "INVALID_DETAILS",
+  DUPLICATE_REQUEST: "DUPLICATE_REQUEST",
+  UNKNOWN_ERROR: "UNKNOWN_ERROR"
+};
+
+/**
+ * Helper lists (used in validation & metrics)
+ */
+export const RETRYABLE_FAILURES = [
+  FAILURE_CODE.ISSUER_TIMEOUT,
+  FAILURE_CODE.NETWORK_ERROR,
+  FAILURE_CODE.PSP_DOWN
+];
+
+export const NON_RETRYABLE_FAILURES = [
+  FAILURE_CODE.INSUFFICIENT_FUNDS,
+  FAILURE_CODE.INVALID_DETAILS,
+  FAILURE_CODE.USER_ABORTED,
+  FAILURE_CODE.BANK_DECLINED
+];
