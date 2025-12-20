@@ -3,6 +3,7 @@ dotenv.config();
 
 import http from "http";
 import app from "./app.js";
+import { initPaymentStatusWebSocket } from "./websocket/paymentStatus.ws.js";
 
 const PORT = process.env.PORT || 4000;
 
@@ -10,6 +11,12 @@ const PORT = process.env.PORT || 4000;
  * Create HTTP Server
  */
 const server = http.createServer(app);
+
+/**
+ * Initialize WebSocket Server
+ */
+const ws = initPaymentStatusWebSocket(server);
+global.paymentWS = ws;
 
 /**
  * Start Server

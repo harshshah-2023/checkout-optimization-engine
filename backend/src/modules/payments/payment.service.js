@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
+import { query } from "../../config/db.js";
+
 
 import {
   PAYMENT_STATUS,
@@ -34,7 +36,7 @@ import {
 /**
  * Temporary in-memory store
  */
-const paymentsStore = new Map();
+// const paymentsStore = new Map(); 
 
 /**
  * Create a new payment
@@ -57,7 +59,26 @@ export async function createPayment(payload) {
     updatedAt: new Date()
   };
 
-  paymentsStore.set(paymentId, payment);
+  // paymentsStore.set(paymentId, payment);
+
+  await query(
+  `INSERT INTO payments
+   (id, merchant_id, amount, currency, payment_method, status, failure_code, attempt_number, created_at, updated_at)
+   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+  [
+    payment.id,
+    payment.merchantId,
+    payment.amount,
+    payment.currency,
+    payment.paymentMethod,
+    payment.status,
+    payment.failureCode,
+    payment.attemptNumber,
+    payment.createdAt,
+    payment.updatedAt
+  ]
+);
+
 
   // METRIC: payment created
   recordMetric({
@@ -71,7 +92,7 @@ export async function createPayment(payload) {
     PAYMENT_STATUS.AUTH_IN_PROGRESS
   );
 
-  paymentsStore.set(paymentId, payment);
+  // paymentsStore.set(paymentId, payment);
 
   // Authorization + retries
   await authorizeWithRetries(payment, validatedData);
@@ -145,8 +166,44 @@ async function authorizeWithRetries(payment, validatedData) {
       });
     }
 
-    payment.updatedAt = new Date();
-    paymentsStore.set(payment.id, payment);
+//     payment.updatedAt = new Date();
+//     paymentsStore.set(payment.id, payment);
+
+//     payment.updatedAt = new Date();
+// paymentsStore.set(payment.id, payment);
+
+payment.updatedAt = new Date();
+
+await query(
+  `UPDATE payments
+   SET status = $1,
+       failure_code = $2,
+       attempt_number = $3,
+       updated_at = $4
+   WHERE id = $5`,
+  [
+    payment.status,
+    payment.failureCode,
+    payment.attemptNumber,
+    payment.updatedAt,
+    payment.id
+  ]
+);
+
+
+// 🔔 REAL-TIME PAYMENT STATUS UPDATE
+if (global.paymentWS) {
+  global.paymentWS.broadcastPaymentUpdate({
+    type: "PAYMENT_STATUS_UPDATE",
+    payload: {
+      id: payment.id,
+      status: payment.status,
+      failureCode: payment.failureCode,
+      updatedAt: payment.updatedAt
+    }
+  });
+}
+
 
     // Stop if authorized
     if (payment.status === PAYMENT_STATUS.AUTHORIZED) {
@@ -186,14 +243,17 @@ async function authorizeWithRetries(payment, validatedData) {
 /**
  * Fetch payment by ID
  */
-export function getPaymentById(paymentId) {
-  const payment = paymentsStore.get(paymentId);
+export async function getPaymentById(paymentId) {
+  const result = await query(
+    `SELECT * FROM payments WHERE id = $1`,
+    [paymentId]
+  );
 
-  if (!payment) {
+  if (result.rows.length === 0) {
     const error = new Error("Payment not found");
     error.statusCode = 404;
     throw error;
   }
 
-  return payment;
+  return result.rows[0];
 }
