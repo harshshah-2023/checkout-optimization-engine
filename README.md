@@ -1,172 +1,236 @@
-# Checkout Intelligence
-**Payment Gateway Optimization & Reliability Platform**
+#  Citadel Flow — Payment Reliability & Optimization Platform
 
-Checkout Intelligence is a production-inspired payment gateway optimization platform designed to improve checkout reliability, performance, and conversion across **Cards, UPI, and Net Banking**.  
-The project models real-world payment systems with a strong focus on **failure handling, retries, metrics, and product decision-making**.
+Citadel Flow is a **production-grade payment intelligence platform** designed to analyze, optimize, and visualize payment success across modern checkout systems.
+
+It simulates how real payment gateways behave internally  including retries, failure classification, latency tracking, and real-time observability  without integrating directly with live bank networks.
+
+This project demonstrates **how high-scale FinTech systems are actually built**, not just how payments are triggered.
 
 ---
 
-##  Problem Statement
+##  What Problem Does Citadel Flow Solve?
 
-Online payments often fail due to transient issues such as issuer timeouts, network instability, PSP downtime, or suboptimal retry strategies. These failures directly impact checkout conversion, user trust, and merchant revenue.
+In real payment systems:
+- Transactions fail for many reasons (issuer issues, network errors, timeouts)
+- Most failures are **recoverable**
+- Gateways that don’t retry intelligently lose revenue
+- Teams lack visibility into *why* payments fail
 
-Checkout Intelligence addresses this problem by simulating a **payment orchestration layer** that prioritizes:
-- Reliability over happy-path flows
-- Transparent transaction state management
-- Data-driven product optimization
+**Citadel Flow solves this by:**
+- Applying state-machine-driven payment processing
+- Classifying failures accurately
+- Retrying only when retries make sense
+- Tracking latency and success metrics
+- Streaming live payment status to dashboards
 
 ---
 
 ##  Key Capabilities
 
-- **End-to-End Payment Lifecycle**
-  - Payment creation, authorization, capture, settlement, refunds
-- **Explicit Transaction State Machine**
-  - Well-defined, auditable state transitions
-- **Failure-First Design**
-  - 15+ realistic failure scenarios and edge cases
-- **Intelligent Retry Engine**
-  - Retryable vs non-retryable failures
-  - Channel-specific retry rules
-- **Real-Time Status Updates**
-  - WebSocket-based payment status tracking
-- **Product & Reliability Metrics**
-  - Transaction success rate
-  - p95 latency
-  - Failure distribution
-  - Retry effectiveness
-- **Analytics Dashboard**
-  - KPI-driven insights for product prioritization
+###  Intelligent Payment Flow
+- Deterministic payment state machine
+- Retry logic based on failure type
+- Idempotent request handling
+
+###  Real-Time Metrics & Analytics
+- Success rate
+- Failure distribution
+- Latency trends
+- Historical event storage
+
+###  Live Payment Updates
+- WebSocket-based live status feed
+- Dashboard updates without refresh
+
+###  Production-Style Architecture
+- Modular services
+- Clear separation of concerns
+- Designed for extensibility (UPI, NetBanking, Wallets)
 
 ---
 
-##  High-Level Architecture
+##  System Architecture
 
 Frontend (React + Tailwind)
-|
-| REST APIs / WebSockets
-|
-Backend (Node.js)
-├─ Payment Orchestrator
-├─ Channel Adapters (Card / UPI / NetBanking)
-├─ Retry Engine
-├─ Metrics & Analytics
-|
-PostgreSQL + Redis
+↓
+Backend API (Express.js)
+↓
+Payment Engine (State Machine + Retry Logic)
+↓
+PostgreSQL (Payments + Metrics)
+↓
+WebSocket Server (Live Updates)
 
-
-
----
-
-##  Frontend
-
-- **Framework:** React.js (Vite)
-- **Styling:** Tailwind CSS
-- **Features:**
-  - Checkout flows for Cards, UPI, and Net Banking
-  - Real-time payment status updates
-  - Retry and refund workflows
-  - Analytics dashboards for KPIs
+yaml
+Copy code
 
 ---
 
-##  Backend
+##  Tech Stack
 
-- **Runtime:** Node.js
-- **Core Components:**
-  - Payment state machine
-  - Channel-specific adapters
-  - Failure simulation engine
-  - Intelligent retry handling
-- **Data Stores:**
-  - PostgreSQL for transactions and metrics
-  - Redis for retries, idempotency, and background jobs
-- **Async Processing:**
-  - Background workers for retries and settlement
-
----
-
-##  Metrics & KPIs
-
-The platform tracks product-critical metrics, including:
-- Transaction success rate
-- Authorization latency (p95)
-- Failure reason distribution
-- Retry success uplift
-- Refund turnaround time (TAT)
-
-These metrics enable **data-driven backlog prioritization** and feature evaluation.
-
----
-
-##  Project Structure
-
-payment-gateway-optimization/
-├── backend/
-│ └── src/
-│ ├── modules/
-│ ├── adapters/
-│ ├── jobs/
-│ └── utils/
-├── frontend/
-│ └── src/
-│ ├── pages/
-│ ├── components/
-│ └── services/
-├── docs/
-└── README.md
-
-
----
-
-##  Getting Started
-
-### Prerequisites
-- Node.js (v18+)
+### Backend
+- Node.js (ES Modules)
+- Express.js
 - PostgreSQL
-- Redis
+- Zod (request validation)
+- WebSockets
 
-### Setup
+### Frontend
+- React (Vite)
+- Tailwind CSS
+- Recharts
+- WebSocket client
 
-```bash
-# Clone repository
-git clone <repo-url>
-cd checkout-intelligence
+---
 
-# Install backend dependencies
+##  Prerequisites
+
+Ensure you have:
+- Node.js 18+
+- PostgreSQL 14+
+- Git
+- PowerShell / Terminal
+
+---
+
+##  Database Setup
+
+### Create Database
+```sql
+CREATE DATABASE Citadel Flow;
+Create Tables
+sql
+Copy code
+CREATE TABLE payments (
+  id UUID PRIMARY KEY,
+  merchant_id UUID,
+  amount BIGINT,
+  currency TEXT,
+  payment_method TEXT,
+  status TEXT,
+  failure_code TEXT,
+  attempt_number INT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  settled_at TIMESTAMP
+);
+
+CREATE TABLE metrics_events (
+  id SERIAL PRIMARY KEY,
+  payment_id UUID,
+  event_type TEXT,
+  failure_code TEXT,
+  latency_ms INT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+⚙ Backend Setup
+bash
+Copy code
 cd backend
 npm install
+.env
+env
+Copy code
+PORT=4000
 
-# Install frontend dependencies
-cd ../frontend
+PG_HOST=localhost
+PG_PORT=5432
+PG_USER=postgres
+PG_PASSWORD=your_password_here
+PG_DATABASE=Citadel Flow
+bash
+Copy code
+npm run dev
+
+----
+
+ Frontend Setup
+bash
+Copy code
+cd frontend
 npm install
-Run backend and frontend separately using npm run dev.
+npm run dev
+Frontend runs at:
 
-🧠 Product Thinking Highlights
-Failure scenarios drive feature prioritization
+arduino
+Copy code
+http://localhost:5173
+🧪 Testing Payments (PowerShell)
+Create Payment
+powershell
+Copy code
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:4000/api/payments" `
+  -ContentType "application/json" `
+  -Body '{
+    "amount": 50000,
+    "currency": "INR",
+    "paymentMethod": "CARD",
+    "card": {
+      "last4": "4242",
+      "network": "VISA",
+      "issuer": "HDFC"
+    }
+  }'
+Fetch Payment by ID
+powershell
+Copy code
+Invoke-RestMethod http://localhost:4000/api/payments/<PAYMENT_ID>
+📊 Dashboard
+Open:
 
-Metrics guide retry strategy improvements
+bash
+Copy code
+http://localhost:5173/dashboard
+Includes:
 
-UX decisions align with reliability constraints
+KPI metrics
 
-Designed to mirror real payment gateway trade-offs
+Success & failure charts
 
-🎓 Purpose
-This project is built as a portfolio-grade demonstration of:
+Latency trends
 
-Payment systems understanding
+Live WebSocket updates
 
-Product management thinking
+ Authentication
+Login & signup are UI-only (prototype).
+No real authentication is implemented by design.
 
-Backend system design
+ What This Project Does NOT Do
+No real bank or card network integration
 
-Frontend UX for reliability-focused products
+No money movement
 
-📌 Disclaimer
-This project is a simulation and does not process real payments.
+No PCI handling
 
- Contact
+This mirrors real payment gateway internal systems, which are separate from external rails.
+
+🎓 Why This Project Matters
+This project demonstrates:
+
+Real payment-system architecture
+
+Failure-aware retries
+
+Metrics-driven design
+
+Production-grade backend patterns
+
+Professional FinTech UI observability
+
+📌 Future Enhancements
+Refund engine
+
+Settlement batching (T+1)
+
+Multi-PSP routing
+
+Auth & RBAC
+
+Dockerized deployment
+
+👤 Author
 Built by Harsh Shah
-Feel free to reach out for discussions on payments, system design, or product optimization.
-
-
+Designed as a real-world FinTech system.
