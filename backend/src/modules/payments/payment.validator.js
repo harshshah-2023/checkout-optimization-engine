@@ -15,11 +15,22 @@ const basePaymentSchema = {
     .length(3)
     .default("INR"),
 
+    
+
   paymentMethod: z.enum([
     PAYMENT_METHOD.CARD,
     PAYMENT_METHOD.UPI,
     PAYMENT_METHOD.NETBANKING
   ]),
+
+  scenario: z.enum([
+    "SUCCESS",
+    "INSUFFICIENT_FUNDS",
+    "TIMEOUT",
+    "NETWORK_ERROR"
+  ]).optional(),
+  // idempotencyKey: z.string().optional(),
+  // userReference: z.string().optional(),
 
   idempotencyKey: z
     .string()
@@ -28,7 +39,8 @@ const basePaymentSchema = {
 
   userReference: z
     .string()
-    .optional()
+    .optional(),
+    // scenario: scenarioSchema.optional()
 };
 
 /**

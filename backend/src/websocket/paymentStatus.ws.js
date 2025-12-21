@@ -13,9 +13,11 @@ export function initPaymentStatusWebSocket(server) {
 
   return {
     broadcastPaymentUpdate(payload) {
+      const message = JSON.stringify(payload);
+
       wss.clients.forEach((client) => {
         if (client.readyState === client.OPEN) {
-          client.send(JSON.stringify(payload));
+          client.send(message);
         }
       });
     }

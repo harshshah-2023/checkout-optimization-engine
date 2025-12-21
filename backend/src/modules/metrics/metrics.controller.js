@@ -1,52 +1,57 @@
-import {
-  getMetricsOverview,
-  getFailureDistribution,
-  getAuthLatencies
-} from "./metrics.service.js";
+import { query } from "../../config/db.js";
+import { getSuccessTrend } from "./metrics.service.js";
+import { getFailureDistribution } from "./metrics.service.js";
+import { getLatencyMetrics } from "./metrics.service.js";
 
-/**
- * GET /api/metrics/overview
- */
-export function metricsOverviewController(req, res, next) {
+export async function getMetricsOverview(req, res, next) {
   try {
-    const data = getMetricsOverview();
+    const result = await query(`
+      SELECT
+        COUNT(*) AS total_payments,
+        COUNT(*) FILTER (WHERE event_type = 'PAYMENT_SUCCESS') AS successful_payments,
+        COUNT(*) FILTER (WHERE event_type = 'PAYMENT_FAILED') AS failed_payments
+      FROM payment_metrics
+    `);
 
-    res.status(200).json({
+    const total = Number(result.rows[0].total_payments);
+    const success = Number(result.rows[0].successful_payments);
+    const failed = Number(result.rows[0].failed_payments);
+
+    res.json({
       success: true,
-      data
+      data: {
+        totalPayments: total,
+        successfulPayments: success,
+        failedPayments: failed,
+        successRate: total === 0 ? 0 : (success / total) * 100
+      }
     });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * GET /api/metrics/failures
- */
-export function metricsFailureController(req, res, next) {
+export async function getSuccessTrendController(req, res, next) {
   try {
-    const data = getFailureDistribution();
-
-    res.status(200).json({
-      success: true,
-      data
-    });
+    const data = await getSuccessTrend();
+    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * GET /api/metrics/latency
- */
-export function metricsLatencyController(req, res, next) {
+export async function getFailureDistributionController(req, res, next) {
   try {
-    const data = getAuthLatencies();
-
-    res.status(200).json({
-      success: true,
-      data
-    });
+    const data = await getFailureDistribution();
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+export async function getLatencyMetricsController(req, res, next) {
+  try {
+    const data = await getLatencyMetrics();
+    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }

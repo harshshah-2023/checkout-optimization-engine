@@ -1,18 +1,15 @@
 import { Router } from "express";
-
-import {
-  metricsOverviewController,
-  metricsFailureController,
-  metricsLatencyController
+import { getMetricsOverview,  getSuccessTrendController ,
+  getFailureDistributionController,  getLatencyMetricsController
 } from "./metrics.controller.js";
 
 const router = Router();
 
 /**
- * Metrics APIs
+ * GET /api/metrics/overview
  */
-router.get("/overview", metricsOverviewController);
-router.get("/failures", metricsFailureController);
-router.get("/latency", metricsLatencyController);
-
+router.get("/overview", getMetricsOverview);
+router.get("/success-trend", getSuccessTrendController);
+router.get("/failure-distribution", getFailureDistributionController);
+router.get("/latency", getLatencyMetricsController);
 export default router;

@@ -41,6 +41,21 @@ import {
 /**
  * Create a new payment
  */
+
+function broadcastPayment(payment) {
+  if (global.paymentWS) {
+    global.paymentWS.broadcastPaymentUpdate({
+      type: "PAYMENT_STATUS_UPDATE",
+      payload: {
+        id: payment.id,
+        status: payment.status,
+        failureCode: payment.failureCode,
+        updatedAt: payment.updatedAt
+      }
+    });
+  }
+}
+
 export async function createPayment(payload) {
   const validatedData = validateCreatePayment(payload);
 
@@ -91,6 +106,7 @@ export async function createPayment(payload) {
     payment.status,
     PAYMENT_STATUS.AUTH_IN_PROGRESS
   );
+  broadcastPayment(payment);
 
   // paymentsStore.set(paymentId, payment);
 
@@ -173,6 +189,10 @@ async function authorizeWithRetries(payment, validatedData) {
 // paymentsStore.set(payment.id, payment);
 
 payment.updatedAt = new Date();
+// paymentsStore.set(payment.id, payment);
+
+broadcastPayment(payment);
+
 
 await query(
   `UPDATE payments

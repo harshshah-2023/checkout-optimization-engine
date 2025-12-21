@@ -2,19 +2,56 @@ import { FAILURE_CODE } from "../../modules/payments/payment.constants.js";
 
 /**
  * Simulates a card issuer (bank)
- * This mimics real-world authorization behavior
+ * Supports deterministic scenarios + realistic randomness
  */
-export async function simulateIssuerAuthorization(cardDetails) {
+export async function simulateIssuerAuthorization(
+  cardDetails,
+  scenario = null
+) {
   // Simulated network latency (100ms – 1200ms)
   const latency = Math.floor(Math.random() * 1100) + 100;
   await new Promise((resolve) => setTimeout(resolve, latency));
 
-  const random = Math.random();
+  /**
+   * 🎯 DETERMINISTIC MODE (for testing)
+   */
+  if (scenario) {
+    switch (scenario) {
+      case "INSUFFICIENT_FUNDS":
+        return {
+          success: false,
+          failureCode: FAILURE_CODE.INSUFFICIENT_FUNDS,
+          latency
+        };
+
+      case "TIMEOUT":
+        return {
+          success: false,
+          failureCode: FAILURE_CODE.ISSUER_TIMEOUT,
+          latency
+        };
+
+      case "NETWORK_ERROR":
+        return {
+          success: false,
+          failureCode: FAILURE_CODE.NETWORK_ERROR,
+          latency
+        };
+
+      case "SUCCESS":
+      default:
+        return {
+          success: true,
+          latency
+        };
+    }
+  }
 
   /**
-   * Failure distribution (realistic)
-   * ~20% failures overall
+   * 🎲 REALISTIC RANDOM MODE (~20% failures)
    */
+  const random = Math.random();
+
   if (random < 0.08) {
     return {
       success: false,
@@ -39,7 +76,6 @@ export async function simulateIssuerAuthorization(cardDetails) {
     };
   }
 
-  // Success
   return {
     success: true,
     latency

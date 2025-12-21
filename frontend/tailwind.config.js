@@ -9,7 +9,7 @@ export default {
       colors: {
         bg: "#0A0B0D",              // deeper black
         surface: "#121316",         // card background
-        primary: "#D6B46A",         // warm champagne gold (VERY IMPORTANT)
+        primary: "#fbbf24",         // warm champagne gold (VERY IMPORTANT)
         secondary: "#1A1B1E",
         textPrimary: "#F3F1EC",     // ivory, not white
         textMuted: "#B6B2A8"   ,     // warm muted grey

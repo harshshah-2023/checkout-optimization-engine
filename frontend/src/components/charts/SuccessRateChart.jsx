@@ -22,7 +22,7 @@ export default function SuccessRateChart({ data }) {
           <Line
             type="monotone"
             dataKey="successRate"
-            stroke="#D6B46A"
+            stroke="#fbbf24"
             strokeWidth={2}
             dot={false}
           />

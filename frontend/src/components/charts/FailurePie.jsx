@@ -6,7 +6,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-const COLORS = ["#D6B46A", "#9CA3AF", "#6B7280", "#4B5563"];
+const COLORS = ["#fbbf24", "#9CA3AF", "#6B7280", "#4B5563"];
 
 export default function FailurePie({ data }) {
   return (

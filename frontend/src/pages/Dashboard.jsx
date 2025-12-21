@@ -4,12 +4,15 @@ import SuccessRateChart from "../components/charts/SuccessRateChart";
 import FailurePie from "../components/charts/FailurePie";
 import LatencyChart from "../components/charts/LatencyChart";
 
+import usePaymentUpdates from "../hooks/usePaymentUpdates";
+
 import {
   fetchMetricsOverview,
   fetchSuccessTrend,
   fetchFailureDistribution,
   fetchLatencyTrend
 } from "../services/metricsService";
+// import SimulatorPanel from "../components/SimulatorPanel";
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState(null);
@@ -19,6 +22,9 @@ export default function Dashboard() {
   const [successTrend, setSuccessTrend] = useState([]);
   const [failureData, setFailureData] = useState([]);
   const [latencyData, setLatencyData] = useState([]);
+  const [livePayments, setLivePayments] = useState([]);
+
+  usePaymentUpdates(setLivePayments);
 
   useEffect(() => {
     let intervalId;
@@ -33,7 +39,6 @@ export default function Dashboard() {
           setFailureData(await fetchFailureDistribution());
           setLatencyData(await fetchLatencyTrend());
         } catch {
-          // Fallback mock data (charts only)
           setSuccessTrend([
             { time: "10:00", successRate: 82 },
             { time: "10:05", successRate: 85 },
@@ -55,7 +60,7 @@ export default function Dashboard() {
           ]);
         }
       } catch {
-        setError("Failed to load dashboard data");
+        setError("Unable to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -63,74 +68,124 @@ export default function Dashboard() {
 
     loadDashboard();
     intervalId = setInterval(loadDashboard, 10000);
-
     return () => clearInterval(intervalId);
   }, []);
 
   return (
-    <section className="min-h-screen bg-[#0A0B0D]">
-      <div className="max-w-7xl mx-auto px-6 py-10">
+    <section className="min-h-screen mt-10 bg-[#0A0B0D] text-white">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-14">
 
-        {/* Page Header */}
-        <div className="mb-10">
-          <h1 className="text-3xl font-semibold text-white">
-            Payments Dashboard
+        {/* HEADER */}
+        <header>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Payments Control Center
           </h1>
-          <p className="mt-2 text-gray-400">
-            Real-time visibility into payment performance, failures, and latency.
+          <p className="mt-2 text-gray-400 max-w-2xl">
+            Monitor transaction reliability, failures, and real-time payment flow health.
           </p>
-        </div>
+        </header>
 
-        {/* Error */}
         {error && (
-          <p className="text-red-400 mb-6">{error}</p>
+          <p className="text-red-400">{error}</p>
         )}
 
-        {/* KPI Cards */}
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : (
-          metrics && (
+        {/* KPI CARDS */}
+        <section>
+          {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <KpiCard
-                title="Success Rate"
-                value={`${Number(metrics.successRate).toFixed(1)}%`}
-              />
-              <KpiCard title="Total Payments" value={metrics.totalPayments} />
-              <KpiCard title="Successful Payments" value={metrics.successfulPayments} />
-              <KpiCard title="Failed Payments" value={metrics.failedPayments} />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </div>
-          )
+          ) : metrics && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <KpiCard title="Success Rate" value={`${Number(metrics.successRate).toFixed(1)}%`} accent="green" />
+              <KpiCard title="Total Payments" value={metrics.totalPayments} />
+              <KpiCard title="Successful" value={metrics.successfulPayments} accent="green" />
+              <KpiCard title="Failed" value={metrics.failedPayments} accent="red" />
+            </div>
+          )}
+        </section>
+
+        {/* <SimulatorPanel/> */}
+
+        {/* CHARTS */}
+        {!loading && (
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <GlassCard title="Success Trend">
+              <SuccessRateChart data={successTrend} />
+            </GlassCard>
+            <GlassCard title="Failure Distribution">
+              <FailurePie data={failureData} />
+            </GlassCard>
+            <GlassCard title="Latency (ms)">
+              <LatencyChart data={latencyData} />
+            </GlassCard>
+          </section>
         )}
 
-        {/* Charts */}
-        {!loading && (
-          <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <SuccessRateChart data={successTrend} />
-            <FailurePie data={failureData} />
-            <LatencyChart data={latencyData} />
+        {/* LIVE PAYMENTS */}
+        <section>
+          <h2 className="text-xl font-semibold mb-4">
+            Live Payment Activity
+          </h2>
+
+          <div className="bg-[#121316] border border-white/10 rounded-xl divide-y divide-white/10">
+            {livePayments.length === 0 ? (
+              <p className="p-6 text-gray-400 text-sm">
+                Waiting for live payment events…
+              </p>
+            ) : (
+              livePayments.slice(0, 6).map((p) => (
+                <div
+                  key={p.id}
+                  className="p-4 flex items-center justify-between hover:bg-white/5 transition"
+                >
+                  <div className="flex flex-col">
+                    <span className="text-sm text-gray-400">
+                      Payment ID
+                    </span>
+                    <span className="font-mono text-sm">
+                      {p.id.slice(0, 8)}…
+                    </span>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+              ))
+            )}
           </div>
-        )}
+        </section>
 
       </div>
     </section>
   );
 }
 
-/* ---------- Components ---------- */
+/* ---------- UI ATOMS ---------- */
 
-function KpiCard({ title, value }) {
+function KpiCard({ title, value, accent }) {
+  const accents = {
+    green: "from-green-500/20 to-transparent",
+    red: "from-red-500/20 to-transparent"
+  };
+
+  return (
+    <div className={`relative bg-[#121316] border border-white/10 rounded-xl p-6 overflow-hidden`}>
+      {accent && (
+        <div className={`absolute inset-0 bg-gradient-to-br ${accents[accent]} pointer-events-none`} />
+      )}
+      <p className="text-sm text-gray-400 relative">{title}</p>
+      <p className="mt-2 text-3xl font-semibold relative">{value}</p>
+    </div>
+  );
+}
+
+function GlassCard({ title, children }) {
   return (
     <div className="bg-[#121316] border border-white/10 rounded-xl p-6">
-      <p className="text-sm text-gray-400">{title}</p>
-      <p className="mt-2 text-2xl font-semibold text-white">
-        {value}
-      </p>
+      <p className="text-sm text-gray-400 mb-4">{title}</p>
+      {children}
     </div>
   );
 }
@@ -139,7 +194,27 @@ function SkeletonCard() {
   return (
     <div className="bg-[#121316] border border-white/10 rounded-xl p-6 animate-pulse">
       <div className="h-4 w-24 bg-gray-700 rounded" />
-      <div className="h-8 w-32 bg-gray-600 rounded mt-4" />
+      <div className="h-10 w-32 bg-gray-600 rounded mt-4" />
     </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const styles = {
+    CREATED: "bg-gray-600/20 text-gray-300",
+    AUTH_IN_PROGRESS: "bg-yellow-500/20 text-yellow-300 animate-pulse",
+    AUTHORIZED: "bg-green-500/20 text-green-300",
+    FAILED: "bg-red-500/20 text-red-300",
+    SETTLED: "bg-blue-500/20 text-blue-300"
+  };
+
+  return (
+    <span
+      className={`px-4 py-1 rounded-full text-xs font-semibold tracking-wide ${
+        styles[status] || styles.CREATED
+      }`}
+    >
+      {status.replaceAll("_", " ")}
+    </span>
   );
 }

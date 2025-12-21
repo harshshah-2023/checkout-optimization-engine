@@ -1,15 +1,8 @@
 import { Router } from "express";
+import { createRefundController } from "./refund.controller.js";
 
 const router = Router();
 
-/**
- * POST /api/refunds
- * Create a refund (stub)
- */
-router.post("/", (req, res) => {
-  res.status(501).json({
-    message: "Refund processing not implemented yet"
-  });
-});
+router.post("/", createRefundController);
 
 export default router;
