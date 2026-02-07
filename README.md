@@ -231,6 +231,7 @@ Multi-PSP routing
 Auth & RBAC
 
 Dockerized deployment
+<img width="1798" height="911" alt="citadelFlowHEro" src="https://github.com/user-attachments/assets/19309576-c12d-434b-81c1-f50bd2c616ee" />
 
 👤 Author
 Built by Harsh Shah
