@@ -124,13 +124,15 @@ CREATE TABLE metrics_events (
   metadata JSONB,
   created_at TIMESTAMP DEFAULT NOW()
 );
+```
 ⚙ Backend Setup
 bash
 Copy code
+```
 cd backend
 npm install
 .env
-env
+```
 Copy code
 PORT=4000
 
@@ -146,20 +148,17 @@ npm run dev
 ----
 
  Frontend Setup
-bash
-Copy code
+```
 cd frontend
 npm install
 npm run dev
+```
 Frontend runs at:
 
-arduino
-Copy code
-http://localhost:5173
 🧪 Testing Payments (PowerShell)
 Create Payment
 powershell
-Copy code
+```
 Invoke-RestMethod `
   -Method POST `
   -Uri "http://localhost:4000/api/payments" `
@@ -175,9 +174,11 @@ Invoke-RestMethod `
     }
   }'
 Fetch Payment by ID
+```
 powershell
-Copy code
+```
 Invoke-RestMethod http://localhost:4000/api/payments/<PAYMENT_ID>
+```
 📊 Dashboard
 Open:
 
